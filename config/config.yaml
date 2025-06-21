@@ -1,1 +1,36 @@
-{}
+# Это конфигурационный файл для pypdfocr.
+
+# Главный ключ, который ожидает скрипт.
+pypdfocr:
+
+  # Секция 'filing' (сортировка) активируется флагом -f.
+  # Здесь мы указываем правила, куда перемещать обработанные файлы.
+  filing:
+
+    # Правило №1:
+    # Если в распознанном тексте PDF-файла найдется хотя бы одно из ключевых слов,
+    # то обработанный файл будет перемещен в указанную папку.
+    # Важно: Папка должна существовать. Coolify создаст /app/processed_files,
+    # а pypdfocr создаст в ней подпапку 'invoices'.
+    - target_folder: /app/processed_files/invoices
+      keywords:
+        - счет
+        - invoice
+        - оплата
+        - payment
+
+    # Правило №2:
+    - target_folder: /app/processed_files/reports
+      keywords:
+        - отчет
+        - report
+        - summary
+
+    # Правило №3: Для документов Евгения
+    - target_folder: /app/processed_files/evgeniy_docs
+      keywords:
+        - Евгений
+        - матердела
+        - AnyScanner
+
+# Этого достаточно, чтобы исправить ошибку и запустить приложение.
