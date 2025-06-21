@@ -6,7 +6,7 @@ FROM debian:bullseye-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # --- Установка системных зависимостей ---
-# Устанавливаем ВСЁ, КРОМЕ python-pip. Добавляем curl для скачивания.
+# Устанавливаем ВСЁ, включая ca-certificates для curl.
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-rus \
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     python2.7-dev \
     build-essential \
     curl \
+    ca-certificates \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
