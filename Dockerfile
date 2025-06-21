@@ -6,8 +6,15 @@ FROM debian:bullseye-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # --- Установка системных зависимостей ---
-# Устанавливаем ВСЁ в одном слое: и системные утилиты, и старый Python 2.7.
-RUN apt-get update && apt-get install -y \
+# Устанавливаем ВСЁ, КРОМЕ python-pip. Добавляем curl для скачивания.
+RUN apt-get update && apt   Из команды `apt-get install` убран `python-pip` и добавлен `curl`.
+*   Добавлен новый `RUN` блок, который скачивает и устанавливает `pip` для Python 2.7 вручную.
+
+### Ваши финальные действия:
+
+1.  **Замените** ваш старый `Dockerfile` на этот, новый.
+2.  **Сохраните, закоммитьте и запушьте** изменения в ваш репозиторий.
+3.  Зайдите в **Coolify** и нажмите **`Redeploy`-get install -y \
     # Утилиты для pypdfocr
     tesseract-ocr \
     tesseract-ocr-rus \
@@ -18,30 +25,16 @@ RUN apt-get update && apt-get install -y \
     # Среда Python 2.7
     python2.7 \
     python2.7-dev \
-    python-pip \
-    # Утилиты для сборки
+    # Утилиты для сборки и скачивания
     build-essential \
+    curl \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# --- РАЗРЕШЕНИЕ ПОЛИТИКИ БЕЗОПАСНОСТИ IMAGEMAGICK ---
+# --- РАЗРЕШЕНИЕ**.
+
+**Теперь мы победим!** Этот метод обходит ограничения системы и делает именно то, что нам нужно. Вы почти у цели, это самый последний рывок ПОЛИТИКИ БЕЗОПАСНОСТИ IMAGEMAGICK ---
 # Разрешаем ImageMagick работать с PDF.
 RUN sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml
 
-# --- Установка приложения ---
-WORKDIR /app
-COPY . .
-
-# Устанавливаем Python-зависимости, используя pip для Python 2.
-RUN pip2 install --upgrade pip && \
-    pip2 install PyYAML && \
-    pip2 install .
-
-# --- Определение рабочих папок (томов) ---
-VOLUME /app/watch_folder
-VOLUME /app/processed_files
-VOLUME /app/original_files
-
-# --- Команда запуска ---
-# Запускаем pypdfocr, используя исполняемый файл Python 2.7.
-CMD ["python2.7", "/usr/local/bin/pypdfocr", "-w", "/app/watch_folder", "-f", "-c", "/app/config/config.yaml"]
+# ---
