@@ -1,45 +1,47 @@
 # --- Базовый образ ---
-# Используем Python 2.7 на основе Debian Bullseye (новее), чтобы получить
-# современный Tesseract v4+, который знает команду "-psm".
-FROM python:2.7-slim-bullseye
+# Используем ЧИСТЫЙ Debian Bullseye как основу. Это дает нам современный Tesseract v5.
+FROM debian:bullseye-slim
+
+# Устанавливаем переменную окружения, чтобы apt-get не задавал интерактивных вопросов.
+ENV DEBIAN_FRONTEND=noninteractive
 
 # --- Установка системных зависимостей ---
-# Устанавливаем всё необходимое для работы.
+# Устанавливаем ВСЁ в одном слое: и системные утилиты, и старый Python 2.7.
 RUN apt-get update && apt-get install -y \
+    # Утилиты для pypdfocr
     tesseract-ocr \
     tesseract-ocr-rus \
     tesseract-ocr-osd \
     ghostscript \
     imagemagick \
     poppler-utils \
+    # Среда Python 2.7
+    python2.7 \
+    python2.7-dev \
+    python-pip \
+    # Утилиты для сборки
     build-essential \
-    python-dev \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# --- РАЗРЕШЕНИЕ ПОЛИТИКИ БЕЗОПАСНОСТИ IMAGEMAGICK (ФИНАЛЬНЫЙ ФИКС) ---
-# По умолчанию ImageMagick блокирует работу с PDF. Нам нужно явно разрешить
-# ему читать и записывать PDF. Путь к файлу в Debian Bullseye.
+# --- РАЗРЕШЕНИЕ ПОЛИТИКИ БЕЗОПАСНОСТИ IMAGEMAGICK ---
+# Разрешаем ImageMagick работать с PDF.
 RUN sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml
 
 # --- Установка приложения ---
-# Устанавливаем рабочую директорию внутри контейнера.
 WORKDIR /app
-
-# Копируем весь исходный код из нашего репозитория в рабочую директорию.
 COPY . .
 
-# Обновляем pip и устанавливаем зависимости.
-RUN pip install --upgrade pip && \
-    pip install PyYAML && \
-    pip install .
+# Устанавливаем Python-зависимости, используя pip для Python 2.
+RUN pip2 install --upgrade pip && \
+    pip2 install PyYAML && \
+    pip2 install .
 
 # --- Определение рабочих папок (томов) ---
-# Эти папки будут управляться через Coolify.
 VOLUME /app/watch_folder
 VOLUME /app/processed_files
 VOLUME /app/original_files
 
 # --- Команда запуска ---
-# Запускаем pypdfocr в режиме мониторинга.
-CMD ["pypdfocr", "-w", "/app/watch_folder", "-f", "-c", "/app/config/config.yaml"]
+# Запускаем pypdfocr, используя исполняемый файл Python 2.7.
+CMD ["python2.7", "/usr/local/bin/pypdfocr", "-w", "/app/watch_folder", "-f", "-c", "/app/config/config.yaml"]
